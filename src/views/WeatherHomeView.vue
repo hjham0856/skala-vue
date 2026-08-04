@@ -5,6 +5,7 @@ import SearchBar from '../components/SearchBar.vue'
 import WeatherCard from '../components/WeatherCard.vue'
 
 import { computed, watch, watchEffect, ref, onMounted } from 'vue'
+import { useCityListStore } from '@/stores/cityListStore.js'
 
 const searchQuery = ref('')
 const selectedCityInfo = ref('')
@@ -12,17 +13,7 @@ const selectedCityInfo = ref('')
 const OWM_KEY = 'b06c8e2135d8c4a27b4e67195a0416a9'
 const OWM_URL = `https://api.openweathermap.org/data/2.5/weather`
 
-// TODO: pinia로 도시 목록 관리하기
-const cityLocations = [
-  { name: '서울', lat: 37.5665, lon: 126.978 },
-  { name: '부산', lat: 35.1796, lon: 129.0756 },
-  { name: '대구', lat: 35.8714, lon: 128.6014 },
-  { name: '인천', lat: 37.4563, lon: 126.7052 },
-  { name: '광주', lat: 35.1595, lon: 126.8526 },
-  { name: '대전', lat: 36.3504, lon: 127.3845 },
-  { name: '울산', lat: 35.5384, lon: 129.3114 },
-  { name: '제주', lat: 33.4996, lon: 126.5312 },
-]
+const cityListStore = useCityListStore()
 const weatherList = ref([])
 
 // TODO: 요청 중/실패 상태 표시
@@ -30,8 +21,8 @@ onMounted(async () => {
   for (let i = 0; i < 8; i++) {
     let weatherResponse = await axios.get(OWM_URL, {
       params: {
-        lat: cityLocations[i].lat,
-        lon: cityLocations[i].lon,
+        lat: cityListStore.cityList[i].lat,
+        lon: cityListStore.cityList[i].lon,
         appid: OWM_KEY,
         units: 'metric',
         lang: 'kr',
@@ -40,7 +31,7 @@ onMounted(async () => {
 
     weatherList.value.push({
       id: weatherResponse.data.id,
-      name: cityLocations[i].name,
+      name: cityListStore.cityList[i].name,
       temp: weatherResponse.data.main.temp,
       status: weatherResponse.data.weather[0].description,
     })
