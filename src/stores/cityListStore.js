@@ -16,6 +16,7 @@ export const useCityListStore = defineStore('cityList', () => {
   // TODO: 도시 추가?
 
   // TODO: 좌표 하드코딩 대신 geocoding으로 도시 이름으로 좌표 불러오기? computed?
+  // https://openweathermap.org/api/geocoding-api?collection=other#direct 참고
 
   return { cityList }
 })
