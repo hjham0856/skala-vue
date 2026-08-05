@@ -992,29 +992,52 @@ a {
 }
 
 .score-ring {
+  --score-progress: 0deg;
+  --score-color: var(--cyan);
+  --score-color-rgb: 105, 244, 221;
+  position: relative;
   display: grid;
   width: 132px;
   height: 132px;
   flex: 0 0 auto;
   place-content: center;
-  border: 7px solid rgba(105, 244, 221, 0.16);
-  border-top-color: var(--cyan);
-  border-right-color: var(--violet);
   border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    var(--score-color) 0deg var(--score-progress),
+    rgba(255, 255, 255, 0.09) var(--score-progress) 360deg
+  );
   text-align: center;
-  box-shadow: 0 0 38px rgba(105, 244, 221, 0.11), inset 0 0 28px rgba(105, 244, 221, 0.05);
+  box-shadow: 0 0 38px rgba(var(--score-color-rgb), 0.14);
 }
 
-.score-ring strong,
-.score-ring small {
+.score-ring::before {
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: inherit;
+  background: rgba(7, 18, 31, 0.98);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.22);
+  content: '';
+}
+
+.score-ring__value {
+  position: relative;
+  z-index: 1;
+}
+
+.score-ring__value strong,
+.score-ring__value small {
   display: block;
 }
 
-.score-ring strong {
+.score-ring__value strong {
+  color: var(--score-color);
   font-size: 2.2rem;
+  text-shadow: 0 0 18px rgba(var(--score-color-rgb), 0.24);
 }
 
-.score-ring small {
+.score-ring__value small {
   margin-top: -4px;
   color: var(--muted);
   font-size: 0.65rem;
@@ -1409,7 +1432,7 @@ a {
     height: 105px;
   }
 
-  .score-ring strong {
+  .score-ring__value strong {
     font-size: 1.7rem;
   }
 

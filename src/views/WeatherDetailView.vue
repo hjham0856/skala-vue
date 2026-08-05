@@ -2,7 +2,7 @@
 import { useCityListStore } from '@/stores/cityListStore'
 import { useConfigStore } from '@/stores/configStore'
 import axios from 'axios'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { airQualityLabel, calculateRunningScore } from '@/utils/runningScore.js'
 
@@ -96,6 +96,37 @@ const displayTemp = (rawTemp) => {
   }
   return rawTemp // 'celsius'일 때는 원본 그대로 반환
 }
+
+const runningScoreStyle = computed(() => {
+  const score = Math.max(0, Math.min(100, Number(weatherDetail.value.running?.score ?? 0)))
+
+  if (score >= 80) {
+    return {
+      '--score-progress': `${score * 3.6}deg`,
+      '--score-color': '#9ff77d',
+      '--score-color-rgb': '159, 247, 125',
+    }
+  }
+  if (score >= 60) {
+    return {
+      '--score-progress': `${score * 3.6}deg`,
+      '--score-color': '#67d7ff',
+      '--score-color-rgb': '103, 215, 255',
+    }
+  }
+  if (score >= 40) {
+    return {
+      '--score-progress': `${score * 3.6}deg`,
+      '--score-color': '#ffc563',
+      '--score-color-rgb': '255, 197, 99',
+    }
+  }
+  return {
+    '--score-progress': `${score * 3.6}deg`,
+    '--score-color': '#ff7380',
+    '--score-color-rgb': '255, 115, 128',
+  }
+})
 </script>
 
 <template>
@@ -122,7 +153,16 @@ const displayTemp = (rawTemp) => {
           <p>체감 {{ displayTemp(weatherDetail.feelsLike) + configStore.unitSymbol }} · 습도 {{ weatherDetail.humidity }}%</p>
         </div>
         <div class="detail-running-score">
-          <span class="score-ring"><strong>{{ weatherDetail.running.score }}</strong><small>/ 100</small></span>
+          <span
+            class="score-ring"
+            :style="runningScoreStyle"
+            role="img"
+            :aria-label="`러닝 지수 ${weatherDetail.running.score}점`"
+          >
+            <span class="score-ring__value">
+              <strong>{{ weatherDetail.running.score }}</strong><small>/ 100</small>
+            </span>
+          </span>
           <div>
             <span class="section-kicker">RUNNING INDEX</span>
             <h2>{{ weatherDetail.running.grade }}</h2>
