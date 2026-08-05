@@ -66,20 +66,18 @@ onBeforeUnmount(() => {
   window.clearInterval(typingTimer)
 })
 
-const fetchCityWeather = async (city, currentWeather) => {
-  const weatherRequest = currentWeather
-    ? Promise.resolve({ data: currentWeather })
-    : axios.get(OWM_URL, {
-        params: { lat: city.lat, lon: city.lon, appid: OWM_KEY, units: 'metric', lang: 'kr' },
-      })
-  const [weatherResponse, airPollutionResponse, forecastResponse] = await Promise.all([
-    weatherRequest,
-    axios.get(AIR_POLLUTION_URL, { params: { lat: city.lat, lon: city.lon, appid: OWM_KEY } }),
+const fetchCityWeather = async (city) => {
+  const weatherResponse = await axios.get(OWM_URL, {
+    params: { id: city.id, appid: OWM_KEY, units: 'metric', lang: 'kr' },
+  })
+  const weather = weatherResponse.data
+  const { lat, lon } = weather.coord
+  const [airPollutionResponse, forecastResponse] = await Promise.all([
+    axios.get(AIR_POLLUTION_URL, { params: { lat, lon, appid: OWM_KEY } }),
     axios.get(FORECAST_URL, {
-      params: { lat: city.lat, lon: city.lon, appid: OWM_KEY, units: 'metric', lang: 'kr', cnt: 1 },
+      params: { id: weather.id, appid: OWM_KEY, units: 'metric', lang: 'kr', cnt: 1 },
     }),
   ])
-  const weather = weatherResponse.data
   const air = airPollutionResponse.data.list[0]
   const forecast = forecastResponse.data.list[0] ?? {}
   const runningInputs = {
@@ -138,7 +136,7 @@ const addCity = async () => {
       return
     }
 
-    weatherList.value.push(await fetchCityWeather(result.city, result.weather))
+    weatherList.value.push(await fetchCityWeather(result.city))
     searchQuery.value = ''
   } catch (error) {
     console.error(error)
