@@ -4,7 +4,7 @@ import BaseDashboardCard from '../components/BaseDashboardCard.vue'
 import SearchBar from '../components/SearchBar.vue'
 import WeatherCard from '../components/WeatherCard.vue'
 
-import { computed, watch, watchEffect, ref, onMounted } from 'vue'
+import { computed, watch, watchEffect, ref, onBeforeUnmount, onMounted } from 'vue'
 import { useCityListStore } from '@/stores/cityListStore.js'
 import { calculateRunningScore } from '@/utils/runningScore.js'
 
@@ -21,8 +21,30 @@ const weatherList = ref([])
 const isLoading = ref(false)
 const isAddingCity = ref(false)
 const errorMessage = ref('')
+const typedRunning = ref('')
+const typingFrames = ['ㄷ', '다', '달', '달ㄹ', '달리', '달리ㄱ', '달리기']
+let typingStartTimer
+let typingTimer
 
 onMounted(async () => {
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  if (reducedMotion) {
+    typedRunning.value = typingFrames.at(-1)
+  } else {
+    typingStartTimer = window.setTimeout(() => {
+      let frameIndex = 0
+      typingTimer = window.setInterval(() => {
+        typedRunning.value = typingFrames[frameIndex]
+        frameIndex += 1
+
+        if (frameIndex === typingFrames.length) {
+          window.clearInterval(typingTimer)
+        }
+      }, 160)
+    }, 1000)
+  }
+
   isLoading.value = true
   errorMessage.value = ''
 
@@ -36,6 +58,11 @@ onMounted(async () => {
   } finally {
     isLoading.value = false
   }
+})
+
+onBeforeUnmount(() => {
+  window.clearTimeout(typingStartTimer)
+  window.clearInterval(typingTimer)
 })
 
 const fetchCityWeather = async (city, currentWeather) => {
@@ -140,9 +167,13 @@ watchEffect(() => {
   <section class="hero-section">
     <div class="hero-copy">
       <p class="eyebrow"><span></span> LIVE RUNNING CONDITIONS</p>
-      <h1>오늘, <span>달리기 좋은</span><br />날씨인가요?</h1>
+      <h1>
+        오늘, <span class="typed-running">{{ typedRunning }}</span> <span>좋은</span
+        ><br />날씨인가요?
+      </h1>
       <p class="hero-description">
-        기온과 바람, 대기질을 한눈에 확인하고<br class="desktop-break" /> 가장 좋은 러닝 타이밍을 찾아보세요.
+        기온과 바람, 대기질을 한눈에 확인하고<br class="desktop-break" />
+        가장 좋은 러닝 타이밍을 찾아보세요.
       </p>
       <div class="hero-chips">
         <span><i class="fa-solid fa-bolt"></i> 실시간 날씨</span>
@@ -161,14 +192,21 @@ watchEffect(() => {
   <BaseDashboardCard class="search-panel">
     <div class="section-heading search-heading">
       <div>
-        <span class="section-kicker"><i class="fa-solid fa-location-crosshairs"></i> FIND YOUR CITY</span>
+        <span class="section-kicker"
+          ><i class="fa-solid fa-location-crosshairs"></i> FIND YOUR CITY</span
+        >
         <h2>어디에서 달리시나요?</h2>
       </div>
       <p>도시를 검색하면 현재 러닝 컨디션을 계산해 드려요.</p>
     </div>
     <div class="search-row">
       <SearchBar :query="searchQuery" @update-query="updateQuery" />
-      <button v-if="showAddCityButton" class="add-city-button" :disabled="isAddingCity" @click="addCity">
+      <button
+        v-if="showAddCityButton"
+        class="add-city-button"
+        :disabled="isAddingCity"
+        @click="addCity"
+      >
         <i :class="isAddingCity ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-plus'"></i>
         {{ isAddingCity ? '도시 추가 중...' : '도시 추가' }}
       </button>
