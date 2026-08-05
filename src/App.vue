@@ -3,7 +3,7 @@ import UnitToggler from './components/UnitToggler.vue'
 </script>
 
 <template>
-  <h1>날씨날씨</h1>
+  <h1>RunnerWeather</h1>
   <nav class="navigation">
     <span class="router-link">
       <RouterLink to="/">Home</RouterLink> &nbsp; <RouterLink to="/about">About</RouterLink>
