@@ -1,44 +1,68 @@
-# skala-vue
+# RunnerWeather
 
-This template should help get you started developing with Vue 3 in Vite.
+러너를 위한 날씨 대시보드입니다. 현재 날씨와 대기질, 강수·바람 정보를 함께 살펴보고, 러닝 컨디션을 점수와 안전 안내로 빠르게 확인할 수 있습니다.
 
-## Recommended IDE Setup
+## 주요 기능
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- 서울, 부산, 제주 등 기본 도시의 현재 날씨 조회
+- 도시 검색 및 목록 추가
+- 기온, 체감온도, 습도, 풍속·돌풍, 시정거리, 강수 확률 확인
+- PM2.5, PM10, 오존과 AQI 기반의 대기질 정보 제공
+- 날씨 요소를 반영한 러닝 지수와 안전 경고 표시
+- 섭씨/화씨 단위 전환
+- 모바일 화면과 `prefers-reduced-motion` 환경 대응
+- 데이터 조회 및 도시 추가 중 로딩 상태, 조회 실패 메시지 제공
 
-## Recommended Browser Setup
+## 시작하기
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+이 프로젝트는 Node.js `22.18.0` 이상 또는 `24.12.0` 이상을 사용합니다.
 
 ```sh
 npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
 npm run dev
 ```
 
-### Compile and Minify for Production
+개발 서버가 시작되면 터미널에 표시된 주소로 접속합니다.
+
+### 빌드
 
 ```sh
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+## 코드 품질 체크리스트
+
+### 단일 책임
+
+- `BaseDashboardCard`, `SearchBar`, `UnitToggler`, `WeatherCard`처럼 반복되는 UI를 컴포넌트로 분리했습니다.
+- 러닝 점수 계산과 대기질 라벨은 `utils/runningScore.js`에서 관리합니다.
+- 도시 목록과 온도 단위 설정은 Pinia store로 분리했습니다.
+
+### 반응형 상태
+
+- 검색 결과와 도시 추가 버튼 노출 상태를 `computed`로 계산해 화면과 동기화합니다.
+- 섭씨/화씨 단위 변경과 러닝 점수 시각화가 상태 변화에 따라 즉시 반영됩니다.
+- 사용자의 `prefers-reduced-motion` 설정을 반영해 애니메이션을 줄입니다.
+
+### 로딩·오류 처리
+
+- 날씨 목록과 상세 날씨를 불러오는 동안 로딩 메시지를 표시합니다.
+- 날씨 조회 실패 시 오류 메시지를 표시합니다.
+- 도시 추가 중에는 버튼의 진행 상태를 보여주고, 검색 실패·중복·요청 실패를 안내합니다.
+
+### 이름
+
+- `fetchCityWeather`, `calculateRunningScore`, `toggleUnit`, `isLoading` 등 주요 로직의 역할이 드러나는 이름을 사용합니다.
+- 날씨 데이터, 도시 목록, 설정 상태를 각각 `weatherList`, `cityList`, `configStore`로 구분합니다.
+
+## 검사
 
 ```sh
 npm run lint
+```
+
+`npm run lint`는 자동 수정 옵션을 포함하므로, 변경 사항을 확인한 뒤 실행하는 것을 권장합니다. 읽기 전용 검사만 필요하다면 다음 명령을 사용할 수 있습니다.
+
+```sh
+npx eslint .
 ```
