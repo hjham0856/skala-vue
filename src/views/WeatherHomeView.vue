@@ -6,12 +6,15 @@ import WeatherCard from '../components/WeatherCard.vue'
 
 import { computed, watch, watchEffect, ref, onMounted } from 'vue'
 import { useCityListStore } from '@/stores/cityListStore.js'
+import { calculateRunningScore } from '@/utils/runningScore.js'
 
 const searchQuery = ref('')
 const selectedCityInfo = ref('')
 
 const OWM_KEY = 'b06c8e2135d8c4a27b4e67195a0416a9'
 const OWM_URL = `https://api.openweathermap.org/data/2.5/weather`
+const AIR_POLLUTION_URL = 'https://api.openweathermap.org/data/2.5/air_pollution'
+const FORECAST_URL = 'https://api.openweathermap.org/data/2.5/forecast'
 
 const cityListStore = useCityListStore()
 const weatherList = ref([])
@@ -24,24 +27,9 @@ onMounted(async () => {
   errorMessage.value = ''
 
   try {
-    for (let i = 0; i < cityListStore.cityList.length; i++) {
-      let weatherResponse = await axios.get(OWM_URL, {
-        params: {
-          lat: cityListStore.cityList[i].lat,
-          lon: cityListStore.cityList[i].lon,
-          appid: OWM_KEY,
-          units: 'metric',
-          lang: 'kr',
-        },
-      })
-
-      weatherList.value.push({
-        id: weatherResponse.data.id,
-        name: cityListStore.cityList[i].name,
-        temp: weatherResponse.data.main.temp,
-        status: weatherResponse.data.weather[0].description,
-      })
-    }
+    weatherList.value = await Promise.all(
+      cityListStore.cityList.map((city) => fetchCityWeather(city)),
+    )
   } catch (error) {
     console.error(error)
     errorMessage.value = '날씨 정보를 불러오지 못했습니다.'
@@ -49,6 +37,45 @@ onMounted(async () => {
     isLoading.value = false
   }
 })
+
+const fetchCityWeather = async (city, currentWeather) => {
+  const weatherRequest = currentWeather
+    ? Promise.resolve({ data: currentWeather })
+    : axios.get(OWM_URL, {
+        params: { lat: city.lat, lon: city.lon, appid: OWM_KEY, units: 'metric', lang: 'kr' },
+      })
+  const [weatherResponse, airPollutionResponse, forecastResponse] = await Promise.all([
+    weatherRequest,
+    axios.get(AIR_POLLUTION_URL, { params: { lat: city.lat, lon: city.lon, appid: OWM_KEY } }),
+    axios.get(FORECAST_URL, {
+      params: { lat: city.lat, lon: city.lon, appid: OWM_KEY, units: 'metric', lang: 'kr', cnt: 1 },
+    }),
+  ])
+  const weather = weatherResponse.data
+  const air = airPollutionResponse.data.list[0]
+  const forecast = forecastResponse.data.list[0] ?? {}
+  const runningInputs = {
+    temp: weather.main.temp,
+    feelsLike: weather.main.feels_like,
+    humidity: weather.main.humidity,
+    rain: weather.rain?.['1h'] ?? 0,
+    snow: weather.snow?.['1h'] ?? 0,
+    precipitationProbability: Math.round((forecast.pop ?? 0) * 100),
+    windSpeed: weather.wind.speed,
+    windGust: weather.wind.gust ?? forecast.wind?.gust ?? 0,
+    visibility: weather.visibility ?? 10000,
+    aqi: air.main.aqi,
+    weatherCode: weather.weather[0].id,
+  }
+
+  return {
+    id: weather.id,
+    name: city.name,
+    temp: weather.main.temp,
+    status: weather.weather[0].description,
+    running: calculateRunningScore(runningInputs),
+  }
+}
 const filteredWeatherList = computed(() => {
   const matchWeatherList = weatherList.value.filter((weather) =>
     weather.name.includes(searchQuery.value),
@@ -83,12 +110,7 @@ const addCity = async () => {
       return
     }
 
-    weatherList.value.push({
-      id: result.weather.id,
-      name: result.city.name,
-      temp: result.weather.main.temp,
-      status: result.weather.weather[0].description,
-    })
+    weatherList.value.push(await fetchCityWeather(result.city, result.weather))
     searchQuery.value = ''
   } catch (error) {
     console.error(error)
@@ -106,7 +128,7 @@ watch(selectedCityInfo, (newCity, oldCity) => {
   if (newCity === '') {
     statusMessage.value = '카드를 클릭하거나 검색해보세요.'
   } else statusMessage.value = newCity + subjectParticle(newCity) + ' 선택되었습니다.'
-  console.log(oldCity + '에서 ' + newCity + '로 도시가 변경되었습니다.')
+  console.log(oldCity + '에서 ' + newCity + '(으)로 도시가 변경되었습니다.')
 })
 
 watchEffect(() => {
@@ -136,6 +158,7 @@ watchEffect(() => {
         :name="weather.name"
         :temp="weather.temp"
         :status="weather.status"
+        :running="weather.running"
       />
     </template>
   </BaseDashboardCard>

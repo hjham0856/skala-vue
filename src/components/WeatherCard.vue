@@ -9,6 +9,7 @@ const props = defineProps({
   name: String,
   temp: Number,
   status: String,
+  running: Object,
 })
 const emit = defineEmits(['weatherCardClickEvent'])
 
@@ -30,6 +31,8 @@ const displayTemp = computed(() => {
   <div id="weatherCard" @click="clickEvent">
     <p>{{ name }}({{ status }})</p>
     <p>현재 기온: {{ displayTemp + configStore.unitSymbol }}</p>
+    <p v-if="running">러닝 추천: {{ running.grade }} · {{ running.score }}점</p>
+    <p v-if="running">{{ running.message }}</p>
     <button style="padding: 8px" @click.stop="router.push('/weather/' + id)">상세보기</button>
     <p v-if="temp >= 25">더움</p>
     <p v-else>선선함</p>
