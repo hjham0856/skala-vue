@@ -1,5 +1,6 @@
 <script setup>
 import axios from 'axios'
+import { ElAlert, ElButton } from 'element-plus'
 import BaseDashboardCard from '../components/BaseDashboardCard.vue'
 import SearchBar from '../components/SearchBar.vue'
 import WeatherCard from '../components/WeatherCard.vue'
@@ -201,15 +202,15 @@ watchEffect(() => {
     </div>
     <div class="search-row">
       <SearchBar :query="searchQuery" @update-query="updateQuery" />
-      <button
+      <ElButton
         v-if="showAddCityButton"
         class="add-city-button"
-        :disabled="isAddingCity"
+        :loading="isAddingCity"
         @click="addCity"
       >
-        <i :class="isAddingCity ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-plus'"></i>
+        <i v-if="!isAddingCity" class="fa-solid fa-plus"></i>
         {{ isAddingCity ? '도시 추가 중...' : '도시 추가' }}
-      </button>
+      </ElButton>
     </div>
     <p class="search-status">
       <i class="fa-solid fa-wave-square"></i>
@@ -226,12 +227,22 @@ watchEffect(() => {
       <span class="live-indicator"><i></i> LIVE</span>
     </div>
 
-    <p v-if="isLoading" class="state-message">
-      <i class="fa-solid fa-circle-notch fa-spin"></i> 날씨 정보를 불러오는 중입니다...
-    </p>
-    <p v-else-if="errorMessage" class="state-message state-message--error">
-      <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMessage }}
-    </p>
+    <ElAlert
+      v-if="isLoading"
+      class="weather-state-alert"
+      title="날씨 정보를 불러오는 중입니다..."
+      type="info"
+      :closable="false"
+      show-icon
+    />
+    <ElAlert
+      v-else-if="errorMessage"
+      class="weather-state-alert weather-state-alert--error"
+      :title="errorMessage"
+      type="error"
+      :closable="false"
+      show-icon
+    />
     <div v-else class="weather-grid">
       <WeatherCard
         @weatherCardClickEvent="(city_name) => (selectedCityInfo = city_name)"

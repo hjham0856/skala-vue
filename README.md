@@ -12,6 +12,7 @@
 - 섭씨/화씨 단위 전환
 - 모바일 화면과 `prefers-reduced-motion` 환경 대응
 - 데이터 조회 및 도시 추가 중 로딩 상태, 조회 실패 메시지 제공
+- Element Plus를 도시 추가 버튼(`ElButton`)과 로딩·오류 안내(`ElAlert`)에 선택 적용
 
 ## 시작하기
 

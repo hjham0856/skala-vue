@@ -477,8 +477,8 @@ a {
   align-items: center;
   min-height: 62px;
   padding: 0 18px;
-  border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.11);
   background: rgba(1, 9, 18, 0.46);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   transition: 180ms ease;
@@ -532,21 +532,33 @@ a {
   transition: 180ms ease;
 }
 
-.add-city-button {
+.el-button.add-city-button {
+  --el-button-bg-color: transparent;
+  --el-button-border-color: transparent;
+  --el-button-text-color: #07131d;
+  --el-button-hover-bg-color: transparent;
+  --el-button-hover-border-color: transparent;
+  --el-button-hover-text-color: #07131d;
+  --el-button-active-bg-color: transparent;
+  --el-button-active-border-color: transparent;
+  --el-button-active-text-color: #07131d;
   min-width: 142px;
+  height: auto;
   padding: 0 20px;
+  border: 0;
   color: #07131d;
   background: linear-gradient(135deg, var(--cyan), #7cc7ff);
   box-shadow: 0 10px 28px rgba(105, 244, 221, 0.16);
 }
 
-.add-city-button:hover,
+.el-button.add-city-button:hover,
 .primary-link:hover {
   transform: translateY(-2px);
   box-shadow: 0 14px 34px rgba(105, 244, 221, 0.25);
 }
 
-.add-city-button:disabled {
+.el-button.add-city-button.is-loading,
+.el-button.add-city-button:disabled {
   cursor: wait;
   opacity: 0.7;
 }
@@ -901,23 +913,38 @@ a {
   color: var(--cyan);
 }
 
-.state-message {
+.weather-state-alert.el-alert {
+  --el-alert-bg-color: rgba(7, 24, 40, 0.7);
+  --el-alert-border-color: rgba(105, 244, 221, 0.24);
+  --el-alert-title-color: var(--text);
+  --el-alert-description-color: var(--muted);
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-height: 150px;
+  min-height: 112px;
   margin: 0;
-  color: var(--muted);
+  border: 1px solid var(--el-alert-border-color);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(14px);
 }
 
-.state-message i {
+.weather-state-alert .el-alert__icon {
   color: var(--cyan);
 }
 
-.state-message--error,
-.state-message--error i {
+.weather-state-alert--error.el-alert {
+  --el-alert-bg-color: rgba(72, 20, 36, 0.52);
+  --el-alert-border-color: rgba(255, 141, 161, 0.35);
+}
+
+.weather-state-alert--error .el-alert__icon {
   color: var(--danger);
+}
+
+.weather-state-alert--detail.el-alert {
+  min-height: 150px;
 }
 
 .detail-page {
@@ -1406,7 +1433,7 @@ a {
     flex-direction: column;
   }
 
-  .add-city-button {
+  .el-button.add-city-button {
     min-height: 50px;
   }
 

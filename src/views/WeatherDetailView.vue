@@ -2,6 +2,7 @@
 import { useCityListStore } from '@/stores/cityListStore'
 import { useConfigStore } from '@/stores/configStore'
 import axios from 'axios'
+import { ElAlert } from 'element-plus'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { airQualityLabel, calculateRunningScore } from '@/utils/runningScore.js'
@@ -131,12 +132,22 @@ const runningScoreStyle = computed(() => {
 
 <template>
   <div class="detail-page">
-    <p v-if="isLoading" class="state-message glass-panel">
-      <i class="fa-solid fa-circle-notch fa-spin"></i> 날씨 정보를 불러오는 중입니다...
-    </p>
-    <p v-else-if="errorMessage" class="state-message state-message--error glass-panel">
-      <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMessage }}
-    </p>
+    <ElAlert
+      v-if="isLoading"
+      class="weather-state-alert weather-state-alert--detail glass-panel"
+      title="날씨 정보를 불러오는 중입니다..."
+      type="info"
+      :closable="false"
+      show-icon
+    />
+    <ElAlert
+      v-else-if="errorMessage"
+      class="weather-state-alert weather-state-alert--detail weather-state-alert--error glass-panel"
+      :title="errorMessage"
+      type="error"
+      :closable="false"
+      show-icon
+    />
     <template v-else>
       <div class="detail-titlebar">
         <div>
