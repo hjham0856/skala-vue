@@ -68,10 +68,12 @@ const runningRecommendation = (score) => {
 export const calculateRunningScore = (weather) => {
   const precipitation = weather.rain + weather.snow
   const thunderstorm = weather.weatherCode >= 200 && weather.weatherCode < 300
-  const heavyRain = weather.rain > 10
   const icingPossible = weather.temp <= 0 && (precipitation > 0 || weather.humidity >= 80)
-  const severeHeat = weather.feelsLike > 31
+  const severeHeat = weather.feelsLike >= 35
+  const severeCold = weather.feelsLike <= -15
+  const heavyRain = weather.rain >= 10
   const heavySnow = weather.snow >= 5
+  const weatherAdvisory = weather.heavyRainAdvisory || weather.strongWindAdvisory || weather.heatWaveAdvisory
 
   const scores = {
     temperature: temperatureScore(weather.feelsLike),
@@ -90,20 +92,40 @@ export const calculateRunningScore = (weather) => {
     scores.wind * 0.1 +
     scores.visibilitySurface * 0.08
 
-  let scoreCap = 100
-  if (thunderstorm || heavyRain) scoreCap = 0
-  if (icingPossible || severeHeat || weather.visibility < 500) scoreCap = Math.min(scoreCap, 20)
-  if (heavySnow || weather.windGust >= 20) scoreCap = Math.min(scoreCap, 10)
+  const safetyCaps = [
+    thunderstorm && 0,
+    weatherAdvisory && 10,
+    weather.windSpeed >= 15 && 20,
+    weather.windSpeed >= 10 && weather.windSpeed < 15 && 35,
+    weather.windGust >= 20 && 10,
+    weather.windGust >= 15 && weather.windGust < 20 && 25,
+    icingPossible && 20,
+    heavyRain && 15,
+    weather.visibility < 500 && 20,
+    severeHeat && 10,
+    severeCold && 20,
+    weather.aqi >= 4 && 10,
+    heavySnow && 10,
+  ].filter(Number.isFinite)
+  const scoreCap = Math.min(100, ...safetyCaps)
 
   const score = Math.round(Math.min(baseScore, scoreCap))
   const safetyWarnings = [
     thunderstorm && '낙뢰·뇌우',
-    heavyRain && '강한 비',
-    icingPossible && '도로 결빙 가능성',
-    severeHeat && '심각한 열 스트레스',
-    weather.visibility < 500 && '시정 500m 미만',
-    heavySnow && '폭설 가능성',
+    weather.heavyRainAdvisory && '호우 특보',
+    weather.strongWindAdvisory && '강풍 특보',
+    weather.heatWaveAdvisory && '폭염 특보',
+    weather.windSpeed >= 15 && '평균 풍속 15m/s 이상',
+    weather.windSpeed >= 10 && weather.windSpeed < 15 && '평균 풍속 10m/s 이상',
     weather.windGust >= 20 && '돌풍 20m/s 이상',
+    weather.windGust >= 15 && weather.windGust < 20 && '돌풍 15m/s 이상',
+    icingPossible && '도로 결빙 가능성',
+    heavyRain && '시간당 강수량 10mm 이상',
+    weather.visibility < 500 && '시정 500m 미만',
+    severeHeat && '체감온도 35°C 이상',
+    severeCold && '체감온도 -15°C 이하',
+    weather.aqi >= 4 && '대기질 매우 나쁨',
+    heavySnow && '폭설 가능성',
   ].filter(Boolean)
 
   return {
