@@ -1,4 +1,5 @@
 <script setup>
+import { useCityListStore } from '@/stores/cityListStore'
 import { useConfigStore } from '@/stores/configStore'
 import axios from 'axios'
 import { onMounted, ref } from 'vue'
@@ -20,6 +21,16 @@ const weatherDetail = ref({})
 const isLoading = ref(false)
 const errorMessage = ref('')
 
+const cityListStore = useCityListStore()
+const getName = (cityId) => {
+  for (let city of cityListStore.cityList) {
+    if (city.id === cityId) {
+      return city.name
+    }
+  }
+  return '어딘가'
+}
+
 onMounted(async () => {
   isLoading.value = true
   errorMessage.value = ''
@@ -31,7 +42,7 @@ onMounted(async () => {
     weatherDetail.value = {
       id: weatherResponse.data.id,
       // TODO: 한국어 도시이름
-      name: weatherResponse.data.name,
+      name: getName(weatherResponse.data.id),
       temp: weatherResponse.data.main.temp,
       feelsLike: weatherResponse.data.main.feels_like,
       status: weatherResponse.data.weather[0].description,
@@ -59,7 +70,7 @@ const displayTemp = (rawTemp) => {
   <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
   <p v-else-if="errorMessage">{{ errorMessage }}</p>
   <template v-else>
-    <h2>도시 {{ weatherDetail.name }}의 날씨 상세</h2>
+    <h2>{{ weatherDetail.name }}의 날씨 상세</h2>
     <h3>기온: {{ displayTemp(weatherDetail.temp) + configStore.unitSymbol }}</h3>
     <p>체감온도: {{ displayTemp(weatherDetail.feelsLike) + configStore.unitSymbol }}</p>
     <p>습도: {{ weatherDetail.humidity }}%</p>

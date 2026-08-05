@@ -16,6 +16,7 @@ const OWM_URL = `https://api.openweathermap.org/data/2.5/weather`
 const cityListStore = useCityListStore()
 const weatherList = ref([])
 const isLoading = ref(false)
+const isAddingCity = ref(false)
 const errorMessage = ref('')
 
 onMounted(async () => {
@@ -23,7 +24,7 @@ onMounted(async () => {
   errorMessage.value = ''
 
   try {
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < cityListStore.cityList.length; i++) {
       let weatherResponse = await axios.get(OWM_URL, {
         params: {
           lat: cityListStore.cityList[i].lat,
@@ -55,8 +56,46 @@ const filteredWeatherList = computed(() => {
   return matchWeatherList
 })
 
+const showAddCityButton = computed(
+  () =>
+    !isLoading.value &&
+    !errorMessage.value &&
+    searchQuery.value.trim() !== '' &&
+    filteredWeatherList.value.length === 0,
+)
+
 const updateQuery = (childQuery) => {
   searchQuery.value = childQuery
+}
+
+const addCity = async () => {
+  isAddingCity.value = true
+
+  try {
+    const result = await cityListStore.addCity(searchQuery.value)
+
+    if (result.status === 'not-found') {
+      alert('OpenWeatherMap에서 해당 도시를 찾지 못했습니다.')
+      return
+    }
+    if (result.status === 'duplicate') {
+      alert('이미 추가된 도시입니다.')
+      return
+    }
+
+    weatherList.value.push({
+      id: result.weather.id,
+      name: result.city.name,
+      temp: result.weather.main.temp,
+      status: result.weather.weather[0].description,
+    })
+    searchQuery.value = ''
+  } catch (error) {
+    console.error(error)
+    alert('도시를 추가하지 못했습니다. 잠시 후 다시 시도해주세요.')
+  } finally {
+    isAddingCity.value = false
+  }
 }
 
 const subjectParticle = (word) =>
@@ -80,6 +119,9 @@ watchEffect(() => {
     <h2>도시 검색</h2>
     <SearchBar :query="searchQuery" @update-query="updateQuery" />
     <p>검색 중인 도시: {{ searchQuery }}</p>
+    <button v-if="showAddCityButton" :disabled="isAddingCity" @click="addCity">
+      {{ isAddingCity ? '도시 추가 중...' : '도시 추가' }}
+    </button>
   </BaseDashboardCard>
   <BaseDashboardCard>
     <h2>지역별 날씨 현황</h2>
