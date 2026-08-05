@@ -10,12 +10,15 @@ export const useCityListStore = defineStore('cityList', () => {
   const cityList = ref([
     { id: 1835848, name: '서울', lat: 37.5665, lon: 126.978 },
     { id: 1838519, name: '부산', lat: 35.1796, lon: 129.0756 },
-    { id: 1835329, name: '대구', lat: 35.8714, lon: 128.6014 },
     { id: 1843564, name: '인천', lat: 37.4563, lon: 126.7052 },
-    { id: 1832973, name: '광주', lat: 35.1595, lon: 126.8526 },
-    { id: 1835224, name: '대전', lat: 36.3504, lon: 127.3845 },
-    { id: 1833747, name: '울산', lat: 35.5384, lon: 129.3114 },
     { id: 1846266, name: '제주', lat: 33.4996, lon: 126.5312 },
+    { id: 2158177, name: '멜버른', lat: -37.8136, lon: 144.9631 },
+    { id: 2650225, name: '에든버러', lat: 55.9533, lon: -3.1883 },
+    { id: 2179537, name: '웰링턴', lat: -41.2866, lon: 174.7756 },
+    { id: 3413829, name: '레이캬비크', lat: 64.1466, lon: -21.9426 },
+    { id: 3369157, name: '케이프타운', lat: -33.9249, lon: 18.4241 },
+    { id: 3435910, name: '부에노스아이레스', lat: -34.6037, lon: -58.3816 },
+    { id: 3874787, name: '푼타아레나스', lat: -53.1638, lon: -70.9171 },
   ])
 
   const addCity = async (searchTerm) => {
