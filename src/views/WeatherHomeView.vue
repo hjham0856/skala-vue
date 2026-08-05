@@ -137,19 +137,64 @@ watchEffect(() => {
 </script>
 
 <template>
-  <BaseDashboardCard>
-    <h2>도시 검색</h2>
-    <SearchBar :query="searchQuery" @update-query="updateQuery" />
-    <p>검색 중인 도시: {{ searchQuery }}</p>
-    <button v-if="showAddCityButton" :disabled="isAddingCity" @click="addCity">
-      {{ isAddingCity ? '도시 추가 중...' : '도시 추가' }}
-    </button>
+  <section class="hero-section">
+    <div class="hero-copy">
+      <p class="eyebrow"><span></span> LIVE RUNNING CONDITIONS</p>
+      <h1>오늘, <span>달리기 좋은</span><br />날씨인가요?</h1>
+      <p class="hero-description">
+        기온과 바람, 대기질을 한눈에 확인하고<br class="desktop-break" /> 가장 좋은 러닝 타이밍을 찾아보세요.
+      </p>
+      <div class="hero-chips">
+        <span><i class="fa-solid fa-bolt"></i> 실시간 날씨</span>
+        <span><i class="fa-solid fa-shield-heart"></i> 러닝 안전 지수</span>
+      </div>
+    </div>
+    <div class="hero-orbit" aria-hidden="true">
+      <div class="orbit-ring orbit-ring--outer"></div>
+      <div class="orbit-ring orbit-ring--inner"></div>
+      <div class="orbit-core"><i class="fa-solid fa-person-running"></i></div>
+      <span class="orbit-dot orbit-dot--one"></span>
+      <span class="orbit-dot orbit-dot--two"></span>
+    </div>
+  </section>
+
+  <BaseDashboardCard class="search-panel">
+    <div class="section-heading search-heading">
+      <div>
+        <span class="section-kicker"><i class="fa-solid fa-location-crosshairs"></i> FIND YOUR CITY</span>
+        <h2>어디에서 달리시나요?</h2>
+      </div>
+      <p>도시를 검색하면 현재 러닝 컨디션을 계산해 드려요.</p>
+    </div>
+    <div class="search-row">
+      <SearchBar :query="searchQuery" @update-query="updateQuery" />
+      <button v-if="showAddCityButton" class="add-city-button" :disabled="isAddingCity" @click="addCity">
+        <i :class="isAddingCity ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-plus'"></i>
+        {{ isAddingCity ? '도시 추가 중...' : '도시 추가' }}
+      </button>
+    </div>
+    <p class="search-status">
+      <i class="fa-solid fa-wave-square"></i>
+      {{ searchQuery ? `“${searchQuery}” 검색 중` : '도시 이름을 입력해 러닝 날씨를 찾아보세요.' }}
+    </p>
   </BaseDashboardCard>
-  <BaseDashboardCard>
-    <h2>지역별 날씨 현황</h2>
-    <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
-    <p v-else-if="errorMessage">{{ errorMessage }}</p>
-    <template v-else>
+
+  <BaseDashboardCard class="weather-panel">
+    <div class="section-heading">
+      <div>
+        <span class="section-kicker"><i class="fa-solid fa-satellite-dish"></i> WEATHER NOW</span>
+        <h2>지역별 러닝 날씨</h2>
+      </div>
+      <span class="live-indicator"><i></i> LIVE</span>
+    </div>
+
+    <p v-if="isLoading" class="state-message">
+      <i class="fa-solid fa-circle-notch fa-spin"></i> 날씨 정보를 불러오는 중입니다...
+    </p>
+    <p v-else-if="errorMessage" class="state-message state-message--error">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMessage }}
+    </p>
+    <div v-else class="weather-grid">
       <WeatherCard
         @weatherCardClickEvent="(city_name) => (selectedCityInfo = city_name)"
         v-for="weather in filteredWeatherList"
@@ -160,9 +205,10 @@ watchEffect(() => {
         :status="weather.status"
         :running="weather.running"
       />
-    </template>
+    </div>
   </BaseDashboardCard>
-  <div id="selectedCityBar" style="text-align: center">{{ statusMessage }}</div>
-</template>
 
-<style scoped></style>
+  <div id="selectedCityBar" class="selected-city-bar">
+    <i class="fa-solid fa-circle-check"></i> {{ statusMessage }}
+  </div>
+</template>

@@ -28,21 +28,36 @@ const displayTemp = computed(() => {
 </script>
 
 <template>
-  <div id="weatherCard" @click="clickEvent">
-    <p>{{ name }}({{ status }})</p>
-    <p>현재 기온: {{ displayTemp + configStore.unitSymbol }}</p>
-    <p v-if="running">러닝 추천: {{ running.grade }} · {{ running.score }}점</p>
-    <p v-if="running">{{ running.message }}</p>
-    <button style="padding: 8px" @click.stop="router.push('/weather/' + id)">상세보기</button>
-    <p v-if="temp >= 25">더움</p>
-    <p v-else>선선함</p>
-  </div>
-</template>
+  <article id="weatherCard" class="weather-card" @click="clickEvent">
+    <div class="weather-card__topline">
+      <span class="location-label"><i class="fa-solid fa-location-dot"></i> {{ name }}</span>
+      <span class="condition-pill">{{ status }}</span>
+    </div>
 
-<style scoped>
-div {
-  padding: 8px;
-  margin: 8px;
-  border: black 1px dashed;
-}
-</style>
+    <div class="weather-card__temperature">
+      <i :class="temp >= 25 ? 'fa-solid fa-sun' : 'fa-solid fa-wind'"></i>
+      <strong>{{ displayTemp }}<sup>{{ configStore.unitSymbol }}</sup></strong>
+    </div>
+
+    <div v-if="running" class="running-summary">
+      <div class="running-score">
+        <span class="score-icon"><i class="fa-solid fa-person-running"></i></span>
+        <span>
+          <small>RUNNING INDEX</small>
+          <strong>{{ running.grade }} · {{ running.score }}점</strong>
+        </span>
+      </div>
+      <p>{{ running.message }}</p>
+    </div>
+
+    <div class="weather-card__footer">
+      <span class="temperature-feel">
+        <i :class="temp >= 25 ? 'fa-solid fa-fire' : 'fa-regular fa-snowflake'"></i>
+        {{ temp >= 25 ? '더운 날씨' : '선선한 날씨' }}
+      </span>
+      <button class="detail-button" @click.stop="router.push('/weather/' + id)">
+        상세보기 <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </article>
+</template>

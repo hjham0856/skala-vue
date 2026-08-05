@@ -99,38 +99,73 @@ const displayTemp = (rawTemp) => {
 </script>
 
 <template>
-  <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
-  <p v-else-if="errorMessage">{{ errorMessage }}</p>
-  <template v-else>
-    <h2>{{ weatherDetail.name }}의 날씨 상세</h2>
-    <h3>기온: {{ displayTemp(weatherDetail.temp) + configStore.unitSymbol }}</h3>
-    <p>체감온도: {{ displayTemp(weatherDetail.feelsLike) + configStore.unitSymbol }}</p>
-    <p>습도: {{ weatherDetail.humidity }}%</p>
-    <p>상태: {{ weatherDetail.status }}</p>
-    <h3>러닝 추천: {{ weatherDetail.running.grade }} · {{ weatherDetail.running.score }}점</h3>
-    <p>{{ weatherDetail.running.message }}</p>
-    <p>안전 경고: {{ weatherDetail.running.safetyWarnings.join(', ') || '없음' }}</p>
-    <p>대기질: {{ weatherDetail.airQuality }} (AQI {{ weatherDetail.aqi }})</p>
-    <p>초미세먼지(PM2.5): {{ weatherDetail.pm25 }} μg/m³</p>
-    <p>미세먼지(PM10): {{ weatherDetail.pm10 }} μg/m³</p>
-    <p>오존(O₃): {{ weatherDetail.ozone }} μg/m³</p>
-    <p>평균 풍속: {{ weatherDetail.windSpeed }}m/s</p>
-    <p>최대 돌풍: {{ weatherDetail.windGust }}m/s</p>
-    <p>시정거리: {{ (weatherDetail.visibility / 1000).toFixed(1) }}km</p>
-    <p>시간당 비·눈 양: {{ weatherDetail.precipitation }}mm</p>
-    <p>향후 3시간 강수 확률: {{ weatherDetail.precipitationProbability }}%</p>
-    <p>시간당 적설량: {{ weatherDetail.snow }}mm</p>
-  </template>
-  <br />
-  <RouterLink to="/">홈으로</RouterLink>
-</template>
+  <div class="detail-page">
+    <p v-if="isLoading" class="state-message glass-panel">
+      <i class="fa-solid fa-circle-notch fa-spin"></i> 날씨 정보를 불러오는 중입니다...
+    </p>
+    <p v-else-if="errorMessage" class="state-message state-message--error glass-panel">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMessage }}
+    </p>
+    <template v-else>
+      <div class="detail-titlebar">
+        <div>
+          <span class="section-kicker"><i class="fa-solid fa-location-dot"></i> RUNNING FORECAST</span>
+          <h1>{{ weatherDetail.name }}의 날씨</h1>
+        </div>
+        <RouterLink class="back-link" to="/"><i class="fa-solid fa-arrow-left"></i> 홈으로</RouterLink>
+      </div>
 
-<style scoped>
-a {
-  padding: 16px;
-  background-color: antiquewhite;
-  color: black;
-  text-decoration: none;
-  border-radius: 8px;
-}
-</style>
+      <section class="detail-hero glass-panel">
+        <div class="detail-current">
+          <span class="condition-pill"><i class="fa-solid fa-cloud-sun"></i> {{ weatherDetail.status }}</span>
+          <strong class="detail-temperature">{{ displayTemp(weatherDetail.temp) }}<sup>{{ configStore.unitSymbol }}</sup></strong>
+          <p>체감 {{ displayTemp(weatherDetail.feelsLike) + configStore.unitSymbol }} · 습도 {{ weatherDetail.humidity }}%</p>
+        </div>
+        <div class="detail-running-score">
+          <span class="score-ring"><strong>{{ weatherDetail.running.score }}</strong><small>/ 100</small></span>
+          <div>
+            <span class="section-kicker">RUNNING INDEX</span>
+            <h2>{{ weatherDetail.running.grade }}</h2>
+            <p>{{ weatherDetail.running.message }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="metrics-grid">
+        <article class="metric-card glass-panel"><i class="fa-solid fa-wind"></i><span>평균 풍속</span><strong>{{ weatherDetail.windSpeed }}<small>m/s</small></strong></article>
+        <article class="metric-card glass-panel"><i class="fa-solid fa-gauge-high"></i><span>최대 돌풍</span><strong>{{ weatherDetail.windGust }}<small>m/s</small></strong></article>
+        <article class="metric-card glass-panel"><i class="fa-solid fa-eye"></i><span>시정거리</span><strong>{{ (weatherDetail.visibility / 1000).toFixed(1) }}<small>km</small></strong></article>
+        <article class="metric-card glass-panel"><i class="fa-solid fa-cloud-rain"></i><span>3시간 강수 확률</span><strong>{{ weatherDetail.precipitationProbability }}<small>%</small></strong></article>
+      </section>
+
+      <div class="detail-columns">
+        <section class="info-card glass-panel">
+          <div class="section-heading">
+            <div><span class="section-kicker">AIR QUALITY</span><h2><i class="fa-solid fa-leaf"></i> 대기질</h2></div>
+            <span class="condition-pill">{{ weatherDetail.airQuality }} · AQI {{ weatherDetail.aqi }}</span>
+          </div>
+          <dl class="data-list">
+            <div><dt>초미세먼지 <small>PM2.5</small></dt><dd>{{ weatherDetail.pm25 }} μg/m³</dd></div>
+            <div><dt>미세먼지 <small>PM10</small></dt><dd>{{ weatherDetail.pm10 }} μg/m³</dd></div>
+            <div><dt>오존 <small>O₃</small></dt><dd>{{ weatherDetail.ozone }} μg/m³</dd></div>
+          </dl>
+        </section>
+        <section class="info-card glass-panel">
+          <div class="section-heading">
+            <div><span class="section-kicker">PRECIPITATION</span><h2><i class="fa-solid fa-droplet"></i> 강수 정보</h2></div>
+          </div>
+          <dl class="data-list">
+            <div><dt>시간당 비·눈</dt><dd>{{ weatherDetail.precipitation }} mm</dd></div>
+            <div><dt>시간당 적설량</dt><dd>{{ weatherDetail.snow }} mm</dd></div>
+            <div><dt>강수 확률</dt><dd>{{ weatherDetail.precipitationProbability }}%</dd></div>
+          </dl>
+        </section>
+      </div>
+
+      <div class="safety-note glass-panel">
+        <i class="fa-solid fa-shield-heart"></i>
+        <div><strong>러닝 안전 체크</strong><p>{{ weatherDetail.running.safetyWarnings.join(', ') || '특별한 안전 경고가 없습니다. 즐거운 러닝 되세요!' }}</p></div>
+      </div>
+    </template>
+  </div>
+</template>
