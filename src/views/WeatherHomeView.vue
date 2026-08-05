@@ -59,12 +59,14 @@ const updateQuery = (childQuery) => {
   searchQuery.value = childQuery
 }
 
+const subjectParticle = (word) =>
+  (word.charCodeAt(word.length - 1) - 0xac00) % 28 === 0 ? '가' : '이'
+
 const statusMessage = ref('카드를 클릭하거나 검색해보세요.')
 watch(selectedCityInfo, (newCity, oldCity) => {
   if (newCity === '') {
     statusMessage.value = '카드를 클릭하거나 검색해보세요.'
-  } else statusMessage.value = newCity + '이/가 선택되었습니다.'
-  // TODO: 받침 여부에 따라 이/가 자동
+  } else statusMessage.value = newCity + subjectParticle(newCity) + ' 선택되었습니다.'
   console.log(oldCity + '에서 ' + newCity + '로 도시가 변경되었습니다.')
 })
 
