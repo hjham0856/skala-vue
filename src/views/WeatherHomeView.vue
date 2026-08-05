@@ -53,6 +53,7 @@ watch(selectedCityInfo, (newCity, oldCity) => {
   if (newCity === '') {
     statusMessage.value = '카드를 클릭하거나 검색해보세요.'
   } else statusMessage.value = newCity + '이/가 선택되었습니다.'
+  // TODO: 받침 여부에 따라 이/가 자동
   console.log(oldCity + '에서 ' + newCity + '로 도시가 변경되었습니다.')
 })
 
