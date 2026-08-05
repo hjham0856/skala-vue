@@ -15,24 +15,36 @@ const OWM_URL =
   `&appid=${OWM_KEY}` +
   `&units=metric` +
   `&lang=kr`
-// TODO: 요청 중/실패 상태 표시
-onMounted(async () => {
-  const weatherResponse = await axios(OWM_URL)
-  console.log(weatherResponse)
-
-  weatherDetail.value = {
-    id: weatherResponse.data.id,
-    // TODO: 한국어 도시이름
-    name: weatherResponse.data.name,
-    temp: weatherResponse.data.main.temp,
-    feelsLike: weatherResponse.data.main.feels_like,
-    status: weatherResponse.data.weather[0].description,
-    humidity: weatherResponse.data.main.humidity,
-  }
-  console.log(weatherDetail.value)
-})
 
 const weatherDetail = ref({})
+const isLoading = ref(false)
+const errorMessage = ref('')
+
+onMounted(async () => {
+  isLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    const weatherResponse = await axios(OWM_URL)
+    console.log(weatherResponse)
+
+    weatherDetail.value = {
+      id: weatherResponse.data.id,
+      // TODO: 한국어 도시이름
+      name: weatherResponse.data.name,
+      temp: weatherResponse.data.main.temp,
+      feelsLike: weatherResponse.data.main.feels_like,
+      status: weatherResponse.data.weather[0].description,
+      humidity: weatherResponse.data.main.humidity,
+    }
+    console.log(weatherDetail.value)
+  } catch (error) {
+    console.error(error)
+    errorMessage.value = '날씨 정보를 불러오지 못했습니다.'
+  } finally {
+    isLoading.value = false
+  }
+})
 
 const displayTemp = (rawTemp) => {
   // 기본 원본 데이터는 섭씨 숫자
@@ -44,11 +56,15 @@ const displayTemp = (rawTemp) => {
 </script>
 
 <template>
-  <h2>도시 {{ weatherDetail.name }}의 날씨 상세</h2>
-  <h3>기온: {{ displayTemp(weatherDetail.temp) + configStore.unitSymbol }}</h3>
-  <p>체감온도: {{ displayTemp(weatherDetail.feelsLike) + configStore.unitSymbol }}</p>
-  <p>습도: {{ weatherDetail.humidity }}%</p>
-  <p>상태: {{ weatherDetail.status }}</p>
+  <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
+  <p v-else-if="errorMessage">{{ errorMessage }}</p>
+  <template v-else>
+    <h2>도시 {{ weatherDetail.name }}의 날씨 상세</h2>
+    <h3>기온: {{ displayTemp(weatherDetail.temp) + configStore.unitSymbol }}</h3>
+    <p>체감온도: {{ displayTemp(weatherDetail.feelsLike) + configStore.unitSymbol }}</p>
+    <p>습도: {{ weatherDetail.humidity }}%</p>
+    <p>상태: {{ weatherDetail.status }}</p>
+  </template>
   <br />
   <RouterLink to="/">홈으로</RouterLink>
 </template>

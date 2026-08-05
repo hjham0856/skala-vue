@@ -15,26 +15,37 @@ const OWM_URL = `https://api.openweathermap.org/data/2.5/weather`
 
 const cityListStore = useCityListStore()
 const weatherList = ref([])
+const isLoading = ref(false)
+const errorMessage = ref('')
 
-// TODO: 요청 중/실패 상태 표시
 onMounted(async () => {
-  for (let i = 0; i < 8; i++) {
-    let weatherResponse = await axios.get(OWM_URL, {
-      params: {
-        lat: cityListStore.cityList[i].lat,
-        lon: cityListStore.cityList[i].lon,
-        appid: OWM_KEY,
-        units: 'metric',
-        lang: 'kr',
-      },
-    })
+  isLoading.value = true
+  errorMessage.value = ''
 
-    weatherList.value.push({
-      id: weatherResponse.data.id,
-      name: cityListStore.cityList[i].name,
-      temp: weatherResponse.data.main.temp,
-      status: weatherResponse.data.weather[0].description,
-    })
+  try {
+    for (let i = 0; i < 8; i++) {
+      let weatherResponse = await axios.get(OWM_URL, {
+        params: {
+          lat: cityListStore.cityList[i].lat,
+          lon: cityListStore.cityList[i].lon,
+          appid: OWM_KEY,
+          units: 'metric',
+          lang: 'kr',
+        },
+      })
+
+      weatherList.value.push({
+        id: weatherResponse.data.id,
+        name: cityListStore.cityList[i].name,
+        temp: weatherResponse.data.main.temp,
+        status: weatherResponse.data.weather[0].description,
+      })
+    }
+  } catch (error) {
+    console.error(error)
+    errorMessage.value = '날씨 정보를 불러오지 못했습니다.'
+  } finally {
+    isLoading.value = false
   }
 })
 const filteredWeatherList = computed(() => {
@@ -70,15 +81,19 @@ watchEffect(() => {
   </BaseDashboardCard>
   <BaseDashboardCard>
     <h2>지역별 날씨 현황</h2>
-    <WeatherCard
-      @weatherCardClickEvent="(city_name) => (selectedCityInfo = city_name)"
-      v-for="weather in filteredWeatherList"
-      :key="weather.id"
-      :id="weather.id"
-      :name="weather.name"
-      :temp="weather.temp"
-      :status="weather.status"
-    />
+    <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
+    <p v-else-if="errorMessage">{{ errorMessage }}</p>
+    <template v-else>
+      <WeatherCard
+        @weatherCardClickEvent="(city_name) => (selectedCityInfo = city_name)"
+        v-for="weather in filteredWeatherList"
+        :key="weather.id"
+        :id="weather.id"
+        :name="weather.name"
+        :temp="weather.temp"
+        :status="weather.status"
+      />
+    </template>
   </BaseDashboardCard>
   <div id="selectedCityBar" style="text-align: center">{{ statusMessage }}</div>
 </template>
